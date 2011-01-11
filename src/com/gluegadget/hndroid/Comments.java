@@ -25,6 +25,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.Html;
 import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -352,7 +353,16 @@ public class Comments extends Activity {
     							replyToValue = replyToNode.getAttributeByName("href").toString().trim();
     						}
 
-    						commentEntry = new Comment(commentText.toString(), scoreValue, authorValue, depthValue, replyToValue, upVoteUrl);
+                            TagNode font = commentSpan.findElementByName("font", true);
+                            String commentBody = font.getText().toString();
+
+                            TagNode[] ps = commentSpan.getElementsByName("p", true);
+
+                            for (TagNode p : ps) {
+                                commentBody += "\n\n" + Html.fromHtml(p.getText().toString()).toString();
+                            }
+
+    						commentEntry = new Comment(commentBody, scoreValue, authorValue, depthValue, replyToValue, upVoteUrl);
     					} else {
     						commentEntry = new Comment("[deleted]");
     					}
