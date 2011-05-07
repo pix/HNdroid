@@ -3,14 +3,12 @@ package com.gluegadget.hndroid;
 public class Comment {
 	private String title;
 	private String author;
-	private String score;
 	private String replyToUrl; 
 	private String upVoteUrl;
 	private Integer padding;
 
-	public Comment(String _title, String _score, String _author, Integer _padding, String _replyToUrl, String _upVoteUrl) {
+	public Comment(String _title, String _author, Integer _padding, String _replyToUrl, String _upVoteUrl) {
 		title = _title;
-		score = _score;
 		author = _author;
 		padding = _padding;
 		
@@ -26,7 +24,7 @@ public class Comment {
 	}
 
 	public Comment(String _title) {
-		this(_title, "", "", 0, "", "");
+		this(_title, "", 0, "", "");
 	}
 	
 	public Integer getPadding() {
@@ -35,10 +33,6 @@ public class Comment {
 
 	public String getTitle() {
 		return title;
-	}
-
-	public String getScore() {
-		return score;
 	}
 
 	public String getAuthor() {
