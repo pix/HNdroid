@@ -332,17 +332,14 @@ public class Comments extends Activity {
     					TagNode commentSpan = (TagNode) comment[0];
     					StringBuffer commentText = commentSpan.getText();
     					if (!commentText.toString().equalsIgnoreCase("[deleted]")) {
-    						Object[] score = nodeParent.evaluateXPath("//span[@class='comhead']/span");
     						Object[] author = nodeParent.evaluateXPath("//span[@class='comhead']/a[1]");
     						Object[] replyTo = nodeParent.evaluateXPath("//p/font[@size='1']/u/a");
     						Object[] upVotes = nodeParent.getParent().evaluateXPath("//td[@valign='top']/center/a[1]");
 
-    						TagNode scoreNode = (TagNode) score[0];
     						TagNode authorNode = (TagNode) author[0];
 
     						String upVoteUrl = "";
     						String replyToValue = "";
-    						String scoreValue = scoreNode.getChildren().iterator().next().toString().trim();
     						String authorValue = authorNode.getChildren().iterator().next().toString().trim();
     						if (upVotes.length > 0) {
     							TagNode upVote = (TagNode) upVotes[0];
@@ -362,7 +359,7 @@ public class Comments extends Activity {
                                 commentBody += "\n\n" + Html.fromHtml(p.getText().toString()).toString();
                             }
 
-    						commentEntry = new Comment(commentBody, scoreValue, authorValue, depthValue, replyToValue, upVoteUrl);
+    						commentEntry = new Comment(commentBody, authorValue, depthValue, replyToValue, upVoteUrl);
     					} else {
     						commentEntry = new Comment("[deleted]");
     					}

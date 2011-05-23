@@ -21,7 +21,6 @@ public class CommentsAdapter extends ArrayAdapter<Comment> {
 	
 	static class ViewHolder {
 		TextView title;
-		TextView score;
 		TextView author;
 	}
 	
@@ -35,7 +34,6 @@ public class CommentsAdapter extends ArrayAdapter<Comment> {
 			convertView = mInflater.inflate(resource, parent, false);
 			holder = new ViewHolder();
 			holder.title = (TextView)convertView.findViewById(R.id.title);
-			holder.score = (TextView)convertView.findViewById(R.id.score);
 			holder.author = (TextView)convertView.findViewById(R.id.author);
 			convertView.setTag(holder);
 		} else {
@@ -44,7 +42,6 @@ public class CommentsAdapter extends ArrayAdapter<Comment> {
 		
 		holder.title.setPadding(item.getPadding() + 1, 10, 10, 10);
 		holder.title.setText(item.getTitle());
-		holder.score.setText(item.getScore());
 		
 		if (item.getAuthor() == "")
 			holder.author.setText(item.getAuthor());
