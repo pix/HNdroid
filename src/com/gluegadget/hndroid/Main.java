@@ -477,6 +477,10 @@ public class Main extends Activity {
     				if (i < subtexts.length) {
     					TagNode subtext = (TagNode) subtexts[i];
     					Object[] scoreSpanNode = subtext.evaluateXPath("/span");
+						if (scoreSpanNode.length == 0)
+							// If there's no span in the subtext it's a job
+							// advert. Skip it.
+							continue;
     					TagNode score = (TagNode) scoreSpanNode[0];
     					
     					Object[] scoreAnchorNodes = subtext.evaluateXPath("/a");
