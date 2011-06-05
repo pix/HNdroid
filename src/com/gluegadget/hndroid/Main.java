@@ -134,7 +134,7 @@ public class Main extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> newsAV, View view, int pos, long id) {
 			final News item = (News) newsAV.getAdapter().getItem(pos);
-			if (pos < 30) {
+			if (pos < newsAV.getAdapter().getCount() - 1) {
 				SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
 				String ListPreference = prefs.getString("PREF_DEFAULT_ACTION", "view-comments");
 				if (ListPreference.equalsIgnoreCase("open-in-browser")) {
