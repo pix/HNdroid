@@ -486,10 +486,11 @@ public class Main extends Activity {
     					Object[] scoreAnchorNodes = subtext.evaluateXPath("/a");
     					TagNode author = (TagNode) scoreAnchorNodes[0];
     					authorValue = author.getChildren().iterator().next().toString().trim();
-    					if (scoreAnchorNodes.length == 2) {
-    						TagNode comment = (TagNode) scoreAnchorNodes[1];
+    					if(scoreAnchorNodes.length == 2 || scoreAnchorNodes.length == 3) {
+    						TagNode comment = (TagNode) scoreAnchorNodes[scoreAnchorNodes.length - 1];
     						commentValue = comment.getChildren().iterator().next().toString().trim();
-    					}
+    						commentsUrl = score.getAttributeByName("id").toString().trim();
+        				}
     					
     					TagNode userNode = newsTitle.getParent().getParent();
     					Object[] upVotes = userNode.evaluateXPath("//td/center/a[1]");
@@ -497,10 +498,6 @@ public class Main extends Activity {
     						TagNode upVote = (TagNode) upVotes[0];
     						upVoteUrl = upVote.getAttributeByName("href").toString().trim();
     					}
-    					
-    					Object[] commentsTag = author.getParent().evaluateXPath("/a");
-    					if (commentsTag.length == 2)
-    						commentsUrl = score.getAttributeByName("id").toString().trim();
     					
     					scoreValue = score.getChildren().iterator().next().toString().trim();
     					
