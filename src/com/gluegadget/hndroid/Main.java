@@ -454,10 +454,6 @@ public class Main extends Activity {
     		Object[] loginFnid = node.evaluateXPath("//span[@class='pagetop']/a");
     		TagNode loginNode = (TagNode) loginFnid[5];
     		loginUrl = loginNode.getAttributeByName("href").toString().trim();
-    		/*CleanerProperties props = cleaner.getProperties();
-    		PrettyXmlSerializer xmlSerializer = new PrettyXmlSerializer(props);
-    		String fileName = "/mnt/sdcard/hn-loggedin.xml";
-    		xmlSerializer.writeXmlToFile(node, fileName);*/
 
     		if (newsTitles.length > 0) {
     			int j = 0;
@@ -472,7 +468,11 @@ public class Main extends Activity {
     				TagNode newsTitle = (TagNode) newsTitles[i];
     				
     				String title = newsTitle.getChildren().iterator().next().toString().trim();
-    				String href = newsTitle.getAttributeByName("href").toString().trim();
+    				
+    				// href can be null herex
+    				String href = newsTitle.getAttributeByName("href");
+    				if (href != null)
+    					href = href.trim();
 
     				if (i < subtexts.length) {
     					TagNode subtext = (TagNode) subtexts[i];
@@ -486,6 +486,7 @@ public class Main extends Activity {
     					Object[] scoreAnchorNodes = subtext.evaluateXPath("/a");
     					TagNode author = (TagNode) scoreAnchorNodes[0];
     					authorValue = author.getChildren().iterator().next().toString().trim();
+    					
     					if(scoreAnchorNodes.length == 2 || scoreAnchorNodes.length == 3) {
     						TagNode comment = (TagNode) scoreAnchorNodes[scoreAnchorNodes.length - 1];
     						commentValue = comment.getChildren().iterator().next().toString().trim();
@@ -501,7 +502,7 @@ public class Main extends Activity {
     					
     					scoreValue = score.getChildren().iterator().next().toString().trim();
     					
-    					if (href.startsWith("http")) {
+    					if (href != null && href.startsWith("http")) {
     						TagNode domain = (TagNode)domains[j];
     						domainValue = domain.getChildren().iterator().next().toString().trim();
     						j++;
