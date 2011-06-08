@@ -351,7 +351,11 @@ public class Comments extends Activity {
     						}
 
                             TagNode font = commentSpan.findElementByName("font", true);
-                            String commentBody = font.getText().toString();
+                            String commentBody = null;
+                            if (font != null)
+                            	commentBody = font.getText().toString();
+                            else
+                            	commentBody = commentSpan.getText().toString();
 
                             TagNode[] ps = commentSpan.getElementsByName("p", true);
 
