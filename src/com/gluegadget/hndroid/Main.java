@@ -40,6 +40,7 @@ import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem.OnMenuItemClickListener;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
@@ -80,14 +81,22 @@ public class Main extends Activity {
 	
 	ArrayList<News> news = new ArrayList<News>();
 	
+	TextView hnTopDesc;
+	
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
     	super.onCreate(savedInstanceState);
+    
+    	final Bundle extras = getIntent().getExtras();
+    	
     	setContentView(R.layout.main);
 
     	newsListView = (ListView)this.findViewById(R.id.hnListView);
     	registerForContextMenu(newsListView);
+    	
+    	hnTopDesc = (TextView)this.findViewById(R.id.hnTopDesc);
+    	
     	int layoutID = R.layout.news_list_item;
     	aa = new NewsAdapter(this, layoutID , news);
     	newsListView.setAdapter(aa);
@@ -95,7 +104,21 @@ public class Main extends Activity {
     	dialog = ProgressDialog.show(Main.this, "", "Loading. Please wait...", true);
     	new Thread(new Runnable(){
     		public void run() {
-    			refreshNews();
+    			String user = null, title = null;
+    			if (extras != null) {
+    				 user = extras.getString("user");
+    				 title = extras.getString("title");
+    			}
+    			
+    			if(!Utils.isEmpty(title)) {
+    				hnTopDesc.setText(extras.getString("title"));
+    			}
+    			
+    			if(!Utils.isEmpty(user)) {
+    				refreshNews("http://news.ycombinator.com/submitted?id=" + user);
+    			} else {
+    				refreshNews();
+    			}
     			dialog.dismiss();
     			handler.sendEmptyMessage(NOTIFY_DATASET_CHANGED);
     		}
@@ -388,7 +411,7 @@ public class Main extends Activity {
     		MenuItem userSubmissions = menu.add(0, CONTEXT_USER_SUBMISSIONS, 0, newsContexted.getAuthor() + " submissions");
     		userSubmissions.setOnMenuItemClickListener(new OnMenuItemClickListener() {		
     			public boolean onMenuItemClick(MenuItem item) {
-    				Intent intent = new Intent(Main.this, Submissions.class);
+    				Intent intent = new Intent(Main.this, Main.class);
     				intent.putExtra("user", newsContexted.getAuthor());
     				intent.putExtra("title", newsContexted.getAuthor() + " submissions");
     				startActivity(intent);

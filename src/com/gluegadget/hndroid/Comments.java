@@ -21,6 +21,7 @@ import org.htmlcleaner.XPatherException;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -46,6 +47,7 @@ public class Comments extends Activity {
 	
 	static final private int CONTEXT_REPLY = 1;
 	static final private int CONTEXT_UPVOTE = 2;
+	static final private int CONTEXT_USER_SUBMISSIONS = 3;
 	
 	ProgressDialog dialog;
 	
@@ -227,6 +229,8 @@ public class Comments extends Activity {
     			return true;
     		}
     	});
+    	
+    	
 
     	return true;
     }
@@ -262,6 +266,17 @@ public class Comments extends Activity {
     			}
     		});
     	}
+    	
+    	MenuItem userSubmissions = menu.add(0, CONTEXT_USER_SUBMISSIONS, 0, newsContexted.getAuthor() + " submissions");
+		userSubmissions.setOnMenuItemClickListener(new OnMenuItemClickListener() {		
+			public boolean onMenuItemClick(MenuItem item) {
+				Intent intent = new Intent(Comments.this, Main.class);
+				intent.putExtra("user", newsContexted.getAuthor());
+				intent.putExtra("title", newsContexted.getAuthor() + " submissions");
+				startActivity(intent);
+				return true;
+			}
+		});
     	
     	if (newsContexted.getUpVoteUrl() != "" && loggedIn) {
     		MenuItem upVote = menu.add(0, CONTEXT_UPVOTE, 0, R.string.context_upvote);
