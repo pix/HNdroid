@@ -72,12 +72,16 @@ public class Comments extends Activity {
         newsListView = (ListView)this.findViewById(R.id.hnListView);
         registerForContextMenu(newsListView);
         int layoutID = R.layout.comments_list_item;
+
+        View header = View.inflate(this, R.layout.hntop, null);
+        newsListView.addHeaderView(header);
+
         aa = new CommentsAdapter(this, layoutID , commentsList);
         newsListView.setAdapter(aa);
         
     	final Bundle extras = getIntent().getExtras();
     	extrasCommentsUrl = extras.getString("url");
-    	TextView hnTopDesc = (TextView)this.findViewById(R.id.hnTopDesc);
+    	TextView hnTopDesc = (TextView)header.findViewById(R.id.hnTopDesc);
     	hnTopDesc.setText(extras.getString("title"));
     	dialog = ProgressDialog.show(Comments.this, "", "Loading. Please wait...", true);
     	new Thread(new Runnable(){

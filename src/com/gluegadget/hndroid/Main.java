@@ -95,7 +95,10 @@ public class Main extends Activity {
     	newsListView = (ListView)this.findViewById(R.id.hnListView);
     	registerForContextMenu(newsListView);
     	
-    	hnTopDesc = (TextView)this.findViewById(R.id.hnTopDesc);
+    	View header = View.inflate(this, R.layout.hntop, null);
+    	newsListView.addHeaderView(header);
+    	
+    	hnTopDesc = (TextView)header.findViewById(R.id.hnTopDesc);
     	
     	int layoutID = R.layout.news_list_item;
     	aa = new NewsAdapter(this, layoutID , news);

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:id="@+id/hnTop" android:orientation="vertical" android:layout_width="fill_parent" android:layout_height="60dip" android:background="#FF6600">
+    <TextView android:paddingLeft="10dip" android:text="Hacker News" android:gravity="center_vertical" android:layout_width="fill_parent" android:textStyle="bold" android:paddingTop="10dip" android:layout_height="wrap_content" android:id="@+id/hnTopTitle"></TextView>
+    <TextView android:paddingLeft="10dip" android:text="News" android:ellipsize="end" android:layout_width="fill_parent" android:singleLine="true" android:paddingBottom="10dip" android:layout_height="wrap_content" android:id="@+id/hnTopDesc"></TextView>
+</LinearLayout>
+
