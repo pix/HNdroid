@@ -10,6 +10,7 @@
     <string name="menu_login">Login</string>
     <string name="menu_logout">Logout</string>
     <string name="menu_preferences">Preferences</string>
+    <string name="context_share">Share</string>
     <string name="context_reply">Reply</string>
     <string name="context_upvote">Upvote</string>
     <string name="context_google_mobile">Mobile adapted view</string>

@@ -1,4 +1,4 @@
-package com.gluegadget.hndroid;
+package com.gluegadget.hndroid.widget;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +11,10 @@ import java.util.Queue;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 import org.htmlcleaner.XPatherException;
+
+import com.gluegadget.hndroid.R;
+import com.gluegadget.hndroid.R.id;
+import com.gluegadget.hndroid.R.layout;
 
 import android.app.Service;
 import android.appwidget.AppWidgetManager;
