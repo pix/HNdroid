@@ -69,6 +69,8 @@ public class MainActivity extends HNDroidActivity {
     super.onCreate(savedInstanceState);
     final Bundle extras = getIntent().getExtras();
 
+    PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
     setContentView(R.layout.main);
 
     newsListView = (ListView) findViewById(R.id.hnListView);
@@ -138,8 +140,7 @@ public class MainActivity extends HNDroidActivity {
           intent.putExtra("title", item.getTitle());
           startActivity(intent);
         } else if (ListPreference.equalsIgnoreCase("mobile-adapted-view")) {
-          final Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse("http://www.google.com/gwt/x?u="
-              + item.getUrl()));
+          final Intent viewIntent = new Intent("android.intent.action.VIEW", getMobileUri(item));
           startActivity(viewIntent);
         }
       } else {
@@ -336,8 +337,8 @@ public class MainActivity extends HNDroidActivity {
     googleMobileLink.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       @Override
       public boolean onMenuItemClick(final MenuItem item) {
-        final Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse("http://www.google.com/gwt/x?u="
-            + newsContexted.getUrl()));
+        final Uri mobileUri = getMobileUri(newsContexted);
+        final Intent viewIntent = new Intent("android.intent.action.VIEW", mobileUri);
         startActivity(viewIntent);
         return true;
       }
@@ -358,6 +359,14 @@ public class MainActivity extends HNDroidActivity {
         }
       });
     }
+  }
+
+  private Uri getMobileUri(final News newsContexted) {
+    final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+    final String mobileConverter = prefs.getString("PREF_MOBILE_VERSION",
+        getResources().getStringArray(R.array.mobile_version_values)[0]);
+    final Uri mobileUri = Uri.parse(String.format(mobileConverter, newsContexted.getUrl()));
+    return mobileUri;
   }
 
   private void maybeAddUpvoteToMenu(final ContextMenu menu, final News newsContexted) {

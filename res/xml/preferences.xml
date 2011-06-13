@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen
-	xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<ListPreference
-		android:key="PREF_DEFAULT_ACTION"
+	<ListPreference android:key="PREF_DEFAULT_ACTION"
 		android:title="Default action"
 		android:summary="Default action on item click"
-		android:entries="@array/default_action_options"
-		android:entryValues="@array/default_action_values"
-		android:dialogTitle="Default action" 
-		android:defaultValue="view-comments" />
-	
+		android:entries="@array/default_action_options" android:entryValues="@array/default_action_values"
+		android:dialogTitle="Default action" android:defaultValue="view-comments" />
+	<ListPreference android:key="PREF_MOBILE_VERSION"
+		android:title="Mobile version converter"
+		android:summary="Which service to use for mobile conversion"
+		android:entryValues="@array/mobile_version_values"
+		android:entries="@array/mobile_version_options"></ListPreference>
+
 </PreferenceScreen>

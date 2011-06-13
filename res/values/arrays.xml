@@ -12,4 +12,12 @@
 		<item>mobile-adapted-view</item>
 		<item>view-comments</item>
 	</string-array>
+		<string-array name="mobile_version_options">
+		<item>Google Mobile</item>
+		<item>ViewText (viewtext.org)</item>
+	</string-array>
+	<string-array name="mobile_version_values">
+		<item>http://www.google.com/gwt/x?u=%s</item>
+		<item>http://viewtext.org/article?url=%s</item>
+	</string-array>
 </resources>
