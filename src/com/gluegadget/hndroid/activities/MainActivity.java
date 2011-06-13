@@ -111,17 +111,10 @@ public class MainActivity extends HNDroidActivity {
           newsListView.setSelection(0);
           break;
         case LOGIN_FAILED:
-          Toast.makeText(MainActivity.this, "Login failed :(", Toast.LENGTH_LONG).show();
+          onLoginFailed();
           break;
         case LOGIN_SUCCESSFULL:
-          Toast.makeText(MainActivity.this, "Successful login :)", Toast.LENGTH_LONG).show();
-          new Thread(new Runnable() {
-            @Override
-            public void run() {
-              refreshNews();
-              handler.sendEmptyMessage(NOTIFY_DATASET_CHANGED);
-            }
-          }).start();
+          onLoginSucceeded();
           break;
         default:
           break;
