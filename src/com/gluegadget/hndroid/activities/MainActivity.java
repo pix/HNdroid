@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.gluegadget.hndroid.HackerNewsClient;
+import com.gluegadget.hndroid.HackerNewsClient.UserInfo;
 import com.gluegadget.hndroid.LoginDialog;
 import com.gluegadget.hndroid.R;
 import com.gluegadget.hndroid.Utils;
@@ -42,6 +43,8 @@ public class MainActivity extends HNDroidActivity {
   private static final int LIST_BEST_ID = 12;
   private static final int LIST_ACTIVE_ID = 13;
   private static final int LIST_NOOB_ID = 14;
+  private static final int LIST_ASK_HN_ID = 15;
+  private static final int LIST_SAVED_STORIES_ID = 16;
 
   static final private int CONTEXT_USER_SUBMISSIONS = 2;
   static final private int CONTEXT_COMMENTS = 3;
@@ -57,9 +60,10 @@ public class MainActivity extends HNDroidActivity {
   static int DEFAULT_ACTION_PREFERENCES = 0;
 
   private String loginUrl = "";
-  private ListView newsListView;
-  private NewsAdapter aa;
+
   private final ArrayList<News> news = new ArrayList<News>();
+  private ListView newsListView;
+  private NewsAdapter newsAdapter;
   private TextView hnTopDesc;
   private TextView hnUserKarma;
 
@@ -81,9 +85,9 @@ public class MainActivity extends HNDroidActivity {
     hnTopDesc = (TextView) header.findViewById(R.id.hnTopDesc);
     hnUserKarma = (TextView) header.findViewById(R.id.hnUserKarma);
 
-    aa = new NewsAdapter(this, R.layout.news_list_item, news);
+    newsAdapter = new NewsAdapter(this, R.layout.news_list_item, news);
 
-    newsListView.setAdapter(aa);
+    newsListView.setAdapter(newsAdapter);
     newsListView.setOnItemClickListener(clickListener);
 
     if (extras != null) {
@@ -109,7 +113,7 @@ public class MainActivity extends HNDroidActivity {
     public void handleMessage(final Message msg) {
       switch (msg.what) {
         case NOTIFY_DATASET_CHANGED:
-          aa.notifyDataSetChanged();
+          newsAdapter.notifyDataSetChanged();
           newsListView.setSelection(0);
           break;
         case LOGIN_FAILED:
@@ -127,24 +131,27 @@ public class MainActivity extends HNDroidActivity {
   OnItemClickListener clickListener = new OnItemClickListener() {
     @Override
     public void onItemClick(final AdapterView<?> newsAV, final View view, final int pos, final long id) {
-      final News item = (News) newsAV.getAdapter().getItem(pos);
-      if (pos < newsAV.getAdapter().getCount() - 1) {
-        final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        final String ListPreference = prefs.getString("PREF_DEFAULT_ACTION", "view-comments");
-        if (ListPreference.equalsIgnoreCase("open-in-browser")) {
-          final Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse(item.getUrl()));
-          startActivity(viewIntent);
-        } else if (ListPreference.equalsIgnoreCase("view-comments")) {
-          final Intent intent = new Intent(MainActivity.this, CommentsActivity.class);
-          intent.putExtra("url", item.getCommentsUrl());
-          intent.putExtra("title", item.getTitle());
-          startActivity(intent);
-        } else if (ListPreference.equalsIgnoreCase("mobile-adapted-view")) {
-          final Intent viewIntent = new Intent("android.intent.action.VIEW", getMobileUri(item));
-          startActivity(viewIntent);
+      final Object item = newsAV.getAdapter().getItem(pos);
+      if (item instanceof News) {
+        final News itemNews = (News) item;
+        if (pos < newsAV.getAdapter().getCount() - 1) {
+          final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+          final String defaultAction = prefs.getString("PREF_DEFAULT_ACTION", "open-in-browser");
+
+          if (defaultAction.equalsIgnoreCase("open-in-browser") && !itemNews.isDead()) {
+            final Uri uri = Uri.parse(itemNews.getUrl());
+            openInBrowser(uri);
+          } else if (defaultAction.equalsIgnoreCase("view-comments")) {
+            final Intent intent = new Intent(MainActivity.this, CommentsActivity.class);
+            intent.putExtra("url", itemNews.getCommentsUrl());
+            intent.putExtra("title", itemNews.getTitle());
+            startActivity(intent);
+          } else if (defaultAction.equalsIgnoreCase("mobile-adapted-view") && !itemNews.isDead()) {
+            openInBrowser(getMobileUri(itemNews));
+          }
+        } else {
+          refreshNews(itemNews.getUrl());
         }
-      } else {
-        refreshNews(item.getUrl());
       }
     }
   };
@@ -161,27 +168,23 @@ public class MainActivity extends HNDroidActivity {
   private class OnLoginListener implements LoginDialog.ReadyListener {
     @Override
     public void ready(final String username, final String password) {
-      try {
-        showProgressDialog("Trying to login. Please wait...");
-        new Thread(new Runnable() {
-          @Override
-          public void run() {
-            final boolean success = getClient().logIn(loginUrl, username, password);
-            hideProgressDialog();
-            runOnUiThread(new Runnable() {
-              @Override
-              public void run() {
-                if (success)
-                  onLoginSucceeded();
-                else
-                  onLoginFailed();
-              }
-            });
-          }
-        }).start();
-      } catch (final Exception e) {
-        e.printStackTrace();
-      }
+      showProgressDialog("Trying to login. Please wait...");
+      new Thread(new Runnable() {
+        @Override
+        public void run() {
+          final boolean success = getClient().logIn(loginUrl, username, password);
+          hideProgressDialog();
+          runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+              if (success)
+                onLoginSucceeded();
+              else
+                onLoginFailed();
+            }
+          });
+        }
+      }).start();
     }
   }
 
@@ -194,20 +197,21 @@ public class MainActivity extends HNDroidActivity {
     menuItemRefresh.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       @Override
       public boolean onMenuItemClick(final MenuItem item) {
-        try {
-          refreshNews();
-        } catch (final Exception e) {
-          e.printStackTrace();
-        }
+        refreshNews();
         return true;
       }
     });
 
     final SubMenu subMenu = menu.addSubMenu(R.string.menu_lists);
-    subMenu.add(LIST_MENU_GROUP, LIST_NEWS_ID, 0, "news");
-    subMenu.add(LIST_MENU_GROUP, LIST_BEST_ID, 1, "best");
-    subMenu.add(LIST_MENU_GROUP, LIST_ACTIVE_ID, 2, "active");
-    subMenu.add(LIST_MENU_GROUP, LIST_NOOB_ID, 3, "noobstories");
+    subMenu.add(LIST_MENU_GROUP, LIST_NEWS_ID, 0, R.string.menu_lists_news);
+    subMenu.add(LIST_MENU_GROUP, LIST_BEST_ID, 0, R.string.menu_lists_best);
+    subMenu.add(LIST_MENU_GROUP, LIST_ACTIVE_ID, 0, R.string.menu_lists_active);
+    subMenu.add(LIST_MENU_GROUP, LIST_NOOB_ID, 0, R.string.menu_lists_noobstories);
+    subMenu.add(LIST_MENU_GROUP, LIST_ASK_HN_ID, 0, R.string.menu_lists_askhn);
+    if (getClient().getCachedUserInfo() != null) {
+      subMenu.add(LIST_MENU_GROUP, LIST_SAVED_STORIES_ID, 0, R.string.menu_lists_savedstories);
+    }
+
     subMenu.setIcon(R.drawable.ic_menu_friendslist);
     subMenu.setGroupCheckable(LIST_MENU_GROUP, true, true);
 
@@ -216,12 +220,8 @@ public class MainActivity extends HNDroidActivity {
     itemLogout.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       @Override
       public boolean onMenuItemClick(final MenuItem item) {
-        try {
-          getClient().logOut();
-          refreshNews();
-        } catch (final Exception e) {
-          e.printStackTrace();
-        }
+        getClient().logOut();
+        refreshNews();
         return true;
       }
     });
@@ -271,15 +271,43 @@ public class MainActivity extends HNDroidActivity {
 
   @Override
   public boolean onOptionsItemSelected(final MenuItem item) {
+    String hnFeed = null;
+
     switch (item.getItemId()) {
       case LIST_ACTIVE_ID:
+        hnFeed = "active";
+        break;
       case LIST_BEST_ID:
+        hnFeed = "best";
+        break;
       case LIST_NOOB_ID:
+        hnFeed = "noobstories";
+        break;
+      case LIST_ASK_HN_ID:
+        hnFeed = "ask";
+        break;
       case LIST_NEWS_ID:
-        final String hnFeed = getString(R.string.hnfeed);
-        refreshNews(hnFeed + item.toString());
-        handler.sendEmptyMessage(NOTIFY_DATASET_CHANGED);
+        hnFeed = "news";
+        break;
+      case LIST_SAVED_STORIES_ID:
+        final UserInfo info = getClient().getCachedUserInfo();
+        if (info != null) {
+          hnFeed = String.format("saved?id=%s", info.getUsername());
+        }
+        break;
+      default:
+        return super.onOptionsItemSelected(item);
     }
+
+    if (hnFeed != null) {
+      hnTopDesc.setText(item.getTitle());
+      final String feedUrl = String.format("%s%s", getString(R.string.hnfeed), hnFeed);
+      refreshNews(feedUrl);
+    } else {
+      hnTopDesc.setText("News");
+      refreshNews();
+    }
+
     return true;
   }
 
@@ -288,34 +316,44 @@ public class MainActivity extends HNDroidActivity {
     super.onCreateContextMenu(menu, v, menuInfo);
 
     final AdapterContextMenuInfo info = (AdapterContextMenuInfo) menuInfo;
-    if (info.position < 30) {
-      final News newsContexted = (News) newsListView.getAdapter().getItem(info.position);
+    final Object currentItem = newsListView.getAdapter().getItem(info.position);
+
+    if (currentItem instanceof News) {
+      final News newsContexted = (News) currentItem;
+      if (!newsContexted.isValidNews())
+        return;
 
       menu.setHeaderTitle(newsContexted.getTitle());
-
       addShareToMenu(menu, newsContexted);
       addOriginalLinkToMenu(menu, newsContexted);
       addGoogleMobileLinkToMenu(menu, newsContexted);
       addCommentsToMenu(menu, newsContexted);
-      maybeAddUserSubmissionsToMenu(menu, newsContexted);
-      maybeAddUpvoteToMenu(menu, newsContexted);
-
+      addUserSubmissionsToMenu(menu, newsContexted);
+      addUpvoteToMenu(menu, newsContexted);
+    } else {
+      return;
     }
+
   }
 
   private void addOriginalLinkToMenu(final ContextMenu menu, final News newsContexted) {
+    if (newsContexted.isDead())
+      return;
+
     final MenuItem originalLink = menu.add(0, CONTEXT_USER_LINK, 0, newsContexted.getUrl());
     originalLink.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       @Override
       public boolean onMenuItemClick(final MenuItem item) {
-        final Intent viewIntent = new Intent("android.intent.action.VIEW", Uri.parse((String) item.getTitle()));
-        startActivity(viewIntent);
+        openInBrowser(Uri.parse(newsContexted.getUrl()));
         return true;
       }
     });
   }
 
   private void addShareToMenu(final ContextMenu menu, final News newsContexted) {
+    if (newsContexted.isDead())
+      return;
+
     final MenuItem shareLink = menu.add(0, CONTEXT_SHARE, 0, R.string.context_share);
     shareLink.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       @Override
@@ -333,13 +371,15 @@ public class MainActivity extends HNDroidActivity {
   }
 
   private void addGoogleMobileLinkToMenu(final ContextMenu menu, final News newsContexted) {
+    if (newsContexted.isDead())
+      return;
+
     final MenuItem googleMobileLink = menu.add(0, CONTEXT_GOOGLE_MOBILE, 0, R.string.context_google_mobile);
     googleMobileLink.setOnMenuItemClickListener(new OnMenuItemClickListener() {
       @Override
       public boolean onMenuItemClick(final MenuItem item) {
         final Uri mobileUri = getMobileUri(newsContexted);
-        final Intent viewIntent = new Intent("android.intent.action.VIEW", mobileUri);
-        startActivity(viewIntent);
+        openInBrowser(mobileUri);
         return true;
       }
     });
@@ -362,6 +402,9 @@ public class MainActivity extends HNDroidActivity {
   }
 
   private Uri getMobileUri(final News newsContexted) {
+    if (newsContexted.getUrl() == null)
+      return null;
+
     final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
     final String mobileConverter = prefs.getString("PREF_MOBILE_VERSION",
         getResources().getStringArray(R.array.mobile_version_values)[0]);
@@ -369,7 +412,7 @@ public class MainActivity extends HNDroidActivity {
     return mobileUri;
   }
 
-  private void maybeAddUpvoteToMenu(final ContextMenu menu, final News newsContexted) {
+  private void addUpvoteToMenu(final ContextMenu menu, final News newsContexted) {
     if (loginUrl.contains("submit") && newsContexted.getUpVoteUrl() != "") {
       final MenuItem upVote = menu.add(0, CONTEXT_USER_UPVOTE, 0, R.string.context_upvote);
       upVote.setOnMenuItemClickListener(new OnMenuItemClickListener() {
@@ -390,7 +433,7 @@ public class MainActivity extends HNDroidActivity {
     }
   }
 
-  private void maybeAddUserSubmissionsToMenu(final ContextMenu menu, final News newsContexted) {
+  private void addUserSubmissionsToMenu(final ContextMenu menu, final News newsContexted) {
     final MenuItem userSubmissions = menu.add(0, CONTEXT_USER_SUBMISSIONS, 0, newsContexted.getAuthor()
         + " submissions");
     userSubmissions.setOnMenuItemClickListener(new OnMenuItemClickListener() {
@@ -403,6 +446,11 @@ public class MainActivity extends HNDroidActivity {
         return true;
       }
     });
+  }
+
+  private void openInBrowser(final Uri uri) {
+    final Intent viewIntent = new Intent("android.intent.action.VIEW", uri);
+    startActivity(viewIntent);
   }
 
   private void refreshNews() {
@@ -423,7 +471,7 @@ public class MainActivity extends HNDroidActivity {
             if (userInfo != null) {
               hnUserKarma.setText(String.format("%s (%s)", userInfo.getUsername(), userInfo.getKarma()));
             }
-            aa.notifyDataSetChanged();
+            newsAdapter.notifyDataSetChanged();
             newsListView.setSelection(0);
             hideProgressDialog();
           }

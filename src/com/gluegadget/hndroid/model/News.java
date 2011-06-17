@@ -1,5 +1,7 @@
 package com.gluegadget.hndroid.model;
 
+import com.gluegadget.hndroid.Utils;
+
 public class News {
 
   private final String title;
@@ -72,6 +74,9 @@ public class News {
   }
 
   public String getUrl() {
+    if (url == null)
+      return null;
+
     if (!url.startsWith("http"))
       if (url.startsWith("/"))
         return "http://news.ycombinator.com" + url;
@@ -95,6 +100,14 @@ public class News {
       return title;
     else
       return title + " by " + author;
+  }
+
+  public boolean isDead() {
+    return Utils.isEmpty(url);
+  }
+
+  public boolean isValidNews() {
+    return !(Utils.isEmpty(domain) && Utils.isEmpty(author) && Utils.isEmpty(score));
   }
 
 }

@@ -14,4 +14,12 @@
     <string name="context_reply">Reply</string>
     <string name="context_upvote">Upvote</string>
     <string name="context_google_mobile">Mobile adapted view</string>
+    
+    <string name="menu_lists_news">News</string>
+    <string name="menu_lists_best">Best</string>
+    <string name="menu_lists_active">Active</string>
+    <string name="menu_lists_noobstories">Noob Stories</string>
+    <string name="menu_lists_askhn">Ask HN</string>
+    <string name="menu_lists_savedstories">Saved stories</string>
+   
 </resources>

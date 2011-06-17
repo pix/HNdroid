@@ -19,5 +19,11 @@
     <style name="WidgetBackground">
         <item name="android:background">@drawable/widget_bg</item>
     </style>
+    <style name="NewsDeadColor">
+        <item name="android:textColor">#FF000000</item>
+    </style>
+    <style name="NewsAliveColor">
+        <item name="android:textColor">#FF000000</item>
+    </style>
     	
 </resources>

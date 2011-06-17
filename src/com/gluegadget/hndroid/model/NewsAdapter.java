@@ -4,6 +4,7 @@ import java.util.List;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -52,9 +53,23 @@ public class NewsAdapter extends ArrayAdapter<News> {
       holder = (ViewHolder) convertView.getTag();
     }
 
-    holder.title.setText(item.getTitle());
+    if (item.isDead()) {
+      holder.title.setText(String.format("[dead] %s", item.getTitle()));
+      holder.title.setTextColor(Color.GRAY);
+      holder.author.setTextColor(Color.GRAY);
+      holder.score.setTextColor(Color.GRAY);
+      holder.comment.setTextColor(Color.GRAY);
+    } else {
+      holder.title.setText(item.getTitle());
+      holder.title.setTextColor(Color.BLACK);
+      holder.author.setTextColor(Color.BLACK);
+      holder.score.setTextColor(Color.BLACK);
+      holder.comment.setTextColor(Color.BLACK);
+    }
+
     holder.score.setText(item.getScore());
     holder.comment.setText(item.getComment());
+
     final String[] commentButtonTag = { item.getTitle(), item.getCommentsUrl() };
     holder.comment.setTag(commentButtonTag);
     holder.comment.setOnClickListener(new OnClickListener() {
